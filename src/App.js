@@ -7,7 +7,9 @@ import { Input, InputGroup, InputLeftElement, InputRightElement, IconButton, But
 
 import { SearchIcon, TriangleDownIcon, ChevronDownIcon } from '@chakra-ui/icons'
 
-import { Text, Divider, Heading } from '@chakra-ui/react'
+import { Text, Divider, Heading, Link } from '@chakra-ui/react'
+
+import { Badge } from '@chakra-ui/layout';
 
 import { Checkbox, List, ListItem } from '@chakra-ui/react'
 
@@ -148,14 +150,31 @@ function App() {
                   </InputGroup>
                 </Center>
                 <SimpleGrid columns={3} spacing={10}>
-                  <Box>Card 1</Box>
-                  <Box>Card 2</Box>
-                  <Box>Card 3</Box>
-                  <Box>Card 4</Box>
-                  <Box>Card 5</Box>
-                  <Box>Card 6</Box>
-                  <Box>Card 7</Box>
-                  <Box>Card 8</Box>
+                  {courses.map((course) => {
+                    return (
+                      <Link maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'>
+
+                        <Box p='6'>
+                          <Box display='flex' alignItems='baseline'>
+                          <Badge borderRadius='full' px='2' colorScheme='teal'>
+                            {course.category}
+                          </Badge>
+                          </Box>
+
+                          <Box
+                            mt='1'
+                            fontWeight='semibold'
+                            as='h4'
+                            lineHeight='tight'
+                            isTruncated
+                          >
+                            {course.title}
+                          </Box>
+                        
+                        </Box>
+                      </Link>
+                    )
+                  })}
                 </SimpleGrid>
                 <Text>Search result test: {JSON.stringify(result)}</Text>
                 <Text>Courses: {JSON.stringify(courses)}</Text>
