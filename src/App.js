@@ -3,7 +3,7 @@ import './App.css';
 
 import { ChakraProvider } from '@chakra-ui/react'
 import { Flex, Spacer, Box, Container, VStack, SimpleGrid, Center } from '@chakra-ui/react'
-import { Input, InputGroup, InputLeftElement, InputRightElement, IconButton } from '@chakra-ui/react'
+import { Input, InputGroup, InputLeftElement, InputRightElement, IconButton, Button } from '@chakra-ui/react'
 
 import { SearchIcon, TriangleDownIcon, ChevronDownIcon } from '@chakra-ui/icons'
 
@@ -15,9 +15,26 @@ import elasticlunr from 'elasticlunr'
 
 import { useState } from 'react';
 
+const dhive = require('@hiveio/dhive');
+
+let opts = {
+  addressPrefix: 'TST',
+  chainId:
+      '18dcf0a285365fc58b71f18b3d3fec954aa0c141c44e4e5cb4cf777b9eab274e',
+};
+
+const client = new dhive.Client("http://127.0.0.1:8090", opts);
+
+const hive_query = {
+  tag: "course",
+  limit: 20
+};
+
 var index = elasticlunr(function () {
   this.addField('title')
-  this.addField('body')
+  this.addField('description')
+  this.addField('objective')
+  this.setRef('permalink')
 });
 
 var doc1 = {
@@ -32,8 +49,8 @@ var doc2 = {
   "body": "As expected, Oracle released its profit report of 2015, during the good sales of database and hardware, Oracle's profit of 2015 reached 12.5 Billion."
 }
 
-index.addDoc(doc1);
-index.addDoc(doc2);
+//index.addDoc(doc1);
+//index.addDoc(doc2);
 
 function App() {
   const [result, setResult] = useState()
@@ -41,10 +58,58 @@ function App() {
     setResult(index.search(event.target.value))
   }
 
+  const [courses, setCourses] = useState([]);
+
+  const grabPosts = async () => {
+    client.database
+        .getDiscussions("created", hive_query)
+        .then(result => {
+            console.log('Response received:', result);
+            if (result) {
+                var posts = [];
+                result.forEach(post => {
+                    const json = JSON.parse(post.json_metadata);
+                    const image = json.image ? json.image[0] : '';
+                    const title = post.title;
+                    const author = post.author;
+                    const permlink = post.permlink;
+                    const created = new Date(post.created).toDateString();
+
+                    posts.push({
+                      title: json["course_title"],
+                      link: json["ipfs_uri"],
+                      category: json.category,
+                      difficulty: json.difficulty,
+                      timecost: json["time_cost_est"],
+                      units: json["unit_breakdown"]
+                    });
+
+                    index.addDoc({
+                      "permalink": "@" + post.author + "/" + post.permlink,
+                      "title": json["course_title"],
+                      "description": json["course_desc"],
+                      "objective": json["course_obj"]
+                    })
+                });
+
+                setCourses(posts);
+            } else {
+                setCourses([]);
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            alert(`Error:${err}, try again`);
+        });
+  }
+
+  
+
   return (
     <div className="App">
       <ChakraProvider>
         <h3>Hello!</h3>
+        <Button onClick={grabPosts}>Get Posts</Button>
         <Container maxW="container.xl">
           <Flex>
             <Box w="300px">
@@ -92,7 +157,8 @@ function App() {
                   <Box>Card 7</Box>
                   <Box>Card 8</Box>
                 </SimpleGrid>
-                <Text>{JSON.stringify(result)}</Text>
+                <Text>Search result test: {JSON.stringify(result)}</Text>
+                <Text>Courses: {JSON.stringify(courses)}</Text>
               </VStack>
             </Box>
           </Flex>
