@@ -17,6 +17,8 @@ import elasticlunr from 'elasticlunr'
 
 import { useState } from 'react';
 
+import { Link as ReactLink } from "react-router-dom";
+
 const dhive = require('@hiveio/dhive');
 
 let opts = {
@@ -152,7 +154,9 @@ function App() {
                 <SimpleGrid columns={3} spacing={10}>
                   {courses.map((course) => {
                     return (
-                      <Link maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'>
+                      <Link maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'
+                        as={ReactLink}
+                        to={"/course/" + course.link + "/details"}>
 
                         <Box p='6'>
                           <Box display='flex' alignItems='baseline'>
