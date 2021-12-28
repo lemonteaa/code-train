@@ -57,10 +57,41 @@ var doc2 = {
 //index.addDoc(doc1);
 //index.addDoc(doc2);
 
+function CourseCard(props) {
+  return (
+    <Link maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'
+      as={ReactLink}
+      to={"/course/" + props.course.link + "/details"}>
+
+      <Box p='6'>
+        <Box display='flex' alignItems='baseline'>
+        <Badge borderRadius='full' px='2' colorScheme='teal'>
+          {props.course.category}
+        </Badge>
+        </Box>
+
+        <Box
+          mt='1'
+          fontWeight='semibold'
+          as='h4'
+          lineHeight='tight'
+          isTruncated
+        >
+          {props.course.title}
+        </Box>
+      
+      </Box>
+    </Link>
+  )
+}
+
 function App() {
   const [result, setResult] = useState()
+  const [isSearching, setSearching] = useState(false);
   const handleChange = (event) => {
-    setResult(index.search(event.target.value))
+    let searchInput = event.target.value;
+    setSearching(searchInput && (searchInput.length >= 3))
+    setResult(index.search(searchInput))
   }
 
   const [courses, setCourses] = useState([]);
@@ -80,16 +111,18 @@ function App() {
                     const permlink = post.permlink;
                     const created = new Date(post.created).toDateString();
 
-                    posts.push({
+                    const basicInfo = {
                       title: json["course_title"],
                       link: json["ipfs_uri"],
                       category: json.category,
                       difficulty: json.difficulty,
                       timecost: json["time_cost_est"],
                       units: json["unit_breakdown"]
-                    });
+                    };
+                    posts.push(basicInfo);
 
                     index.addDoc({
+                      ...basicInfo,
                       "permalink": "@" + post.author + "/" + post.permlink,
                       "title": json["course_title"],
                       "description": json["course_desc"],
@@ -152,31 +185,14 @@ function App() {
                   </InputGroup>
                 </Center>
                 <SimpleGrid columns={3} spacing={10}>
-                  {courses.map((course) => {
+                  {!isSearching ? courses.map((course) => {
                     return (
-                      <Link maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'
-                        as={ReactLink}
-                        to={"/course/" + course.link + "/details"}>
-
-                        <Box p='6'>
-                          <Box display='flex' alignItems='baseline'>
-                          <Badge borderRadius='full' px='2' colorScheme='teal'>
-                            {course.category}
-                          </Badge>
-                          </Box>
-
-                          <Box
-                            mt='1'
-                            fontWeight='semibold'
-                            as='h4'
-                            lineHeight='tight'
-                            isTruncated
-                          >
-                            {course.title}
-                          </Box>
-                        
-                        </Box>
-                      </Link>
+                      <CourseCard course={course} />
+                    )
+                  }) : result.map((res) => {
+                    const course = index.documentStore.getDoc(res.ref);
+                    return (
+                      <CourseCard course={course} />
                     )
                   })}
                 </SimpleGrid>
