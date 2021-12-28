@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/layout";
+import { Box, Container } from "@chakra-ui/layout";
 
 import { useParams } from "react-router-dom";
 
@@ -7,6 +7,8 @@ import { create } from "ipfs-http-client";
 import { useEffect, useState } from 'react';
 
 import { Heading, Text } from '@chakra-ui/react';
+
+import { Steps, Step } from 'chakra-ui-steps';
 
 const readFromIPFS = async (path) => {
     const client = create({
@@ -52,6 +54,16 @@ export default function CourseDetails() {
             <Text>{courseInfo["course_desc"]}</Text>
             <Heading as='h4'>Learning Outcome:</Heading>
             <Text>{courseInfo["course_obj"]}</Text>
+            <Steps><Step></Step></Steps>
         </Box>
     );
 }
+
+/*
+            <Container width="100%">
+                <Steps activeStep="0" width="100%">
+                    <Step width="100%">More test</Step>
+                    <Step>Test</Step>
+                </Steps>
+            </Container>
+*/

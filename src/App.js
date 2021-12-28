@@ -1,7 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
 
-import { ChakraProvider } from '@chakra-ui/react'
 import { Flex, Spacer, Box, Container, VStack, SimpleGrid, Center } from '@chakra-ui/react'
 import { Input, InputGroup, InputLeftElement, InputRightElement, IconButton, Button } from '@chakra-ui/react'
 
@@ -18,6 +17,8 @@ import elasticlunr from 'elasticlunr'
 import { useState } from 'react';
 
 import { Link as ReactLink } from "react-router-dom";
+
+
 
 const dhive = require('@hiveio/dhive');
 
@@ -111,7 +112,6 @@ function App() {
 
   return (
     <div className="App">
-      <ChakraProvider>
         <h3>Hello!</h3>
         <Button onClick={grabPosts}>Get Posts</Button>
         <Container maxW="container.xl">
@@ -186,7 +186,6 @@ function App() {
             </Box>
           </Flex>
         </Container>
-      </ChakraProvider>
     </div>
   );
 }
