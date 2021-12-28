@@ -2,7 +2,7 @@ import { Box, Container } from "@chakra-ui/layout";
 
 import { useParams } from "react-router-dom";
 
-import { create } from "ipfs-http-client";
+import { readFromIPFS } from "../utils/ipfs";
 
 import { useEffect, useState } from 'react';
 
@@ -20,28 +20,13 @@ import {
     AccordionButton,
     AccordionPanel,
     AccordionIcon,
-  } from '@chakra-ui/react'
+} from '@chakra-ui/react';
 
-const readFromIPFS = async (path) => {
-    const client = create({
-        host: "ipfs.infura.io",
-        port: 5001,
-        protocol: "https"
-    });
+import { Link } from '@chakra-ui/react';
+import { Link as ReactLink } from "react-router-dom";
+ 
 
-    const res = [];
-    const data = await client.cat(path);
-    for await (let byte of data) {
-        const thisRound = Array.from(byte)
-        .map((x) => {
-            return String.fromCharCode(x);
-        })
-        .join("");
-        res.push(thisRound);
-    }
-    return res.join("");
-    //console.log(String.fromCharCode(72));
-}
+
 
 export default function CourseDetails() {
     let params = useParams();
@@ -77,7 +62,7 @@ export default function CourseDetails() {
             <Heading as='h4'>Learning Outcome:</Heading>
             <Text>{courseInfo["course_obj"]}</Text>
             <Accordion defaultIndex={[0]} allowMultiple>
-            {courseInfo["table_of_content"].map((section) => {
+            {courseInfo["table_of_content"] ? courseInfo["table_of_content"].map((section) => {
                 return (
                     <AccordionItem>
                         <h2>
@@ -92,14 +77,16 @@ export default function CourseDetails() {
                             <Steps orientation="vertical">
                                 {section.units.map((unit) => {
                                     return (
-                                        <Step label={unit.title} icon={displayIcon(unit.types)}></Step>
+                                        <Step label={unit.title} icon={displayIcon(unit.types)}>
+                                            <Link as={ReactLink} to={"/course/" + params.ipfscid + "/content?path=" + unit.path}>Hi</Link>
+                                        </Step>
                                     )
                                 })}
                             </Steps>
                         </AccordionPanel>
                     </AccordionItem>
                     )
-            })}
+            }) : ""}
             </Accordion>
         </Box>
     );
@@ -112,4 +99,5 @@ export default function CourseDetails() {
                     <Step>Test</Step>
                 </Steps>
             </Container>
+            
 */

@@ -7,6 +7,7 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import CourseDetails from './pages/CourseDetails';
+import CourseViewer from './pages/CourseViewer';
 
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { StepsStyleConfig } from 'chakra-ui-steps';
@@ -26,6 +27,7 @@ ReactDOM.render(
           <Route path="/" element={<App />} />
           <Route path="course" >
             <Route path=":ipfscid/details" element={<CourseDetails/> } />
+            <Route path=":ipfscid/content" element={<CourseViewer/>} />
           </Route>
         </Routes>
       </BrowserRouter>
