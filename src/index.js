@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import CourseDetails from './pages/CourseDetails';
 import CourseViewer from './pages/CourseViewer';
+import Dashboard from './pages/Dashboard';
 
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { StepsStyleConfig } from 'chakra-ui-steps';
@@ -24,7 +25,8 @@ ReactDOM.render(
     <ChakraProvider theme={theme}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="catalog" element={<App />} />
           <Route path="course" >
             <Route path=":ipfscid/details" element={<CourseDetails/> } />
             <Route path=":ipfscid/content" element={<CourseViewer/>} />

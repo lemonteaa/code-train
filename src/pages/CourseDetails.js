@@ -25,6 +25,8 @@ import {
 
 import { Link } from '@chakra-ui/react';
 import { Link as ReactLink } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
  
 import Dexie from 'dexie';
 import relationships from 'dexie-relationships';
@@ -36,8 +38,13 @@ db.version(1).stores({
     courses: '++id, ipfs, title, enrolled',
     learning_unit: '++id, courseId -> courses.id, title, url, sectionNum, unitNum, completed'
 });
+db.version(2).stores({
+    bookmarks: '++id, unitId -> learning_unit.id'
+});
 
 export default function CourseDetails() {
+    let navigate = useNavigate();
+
     let params = useParams();
 
     const [courseInfo, setCourseInfo] = useState({});
@@ -60,6 +67,10 @@ export default function CourseDetails() {
         else return false;
     }, [params.ipfscid])
 
+    const unitCompleted = useLiveQuery(async () => {
+        return await db["learning_unit"].where("courseId").equals(params.ipfscid).toArray()
+    }, [params.ipfscid])
+
     const displayIcon = (type) => {
         if (type == "reading_material") {
             return FaBook;
@@ -77,6 +88,24 @@ export default function CourseDetails() {
             title: courseInfo["course_title"],
             enrolled: true
         });
+
+        courseInfo["table_of_content"].forEach(async (section, i) => {
+            section.units.forEach( async (unit, j) => {
+                try {
+                    await db["learning_unit"].add({
+                        id: i*100 + j,
+                        courseId: params.ipfscid,
+                        title: unit.title,
+                        url: unit.path,
+                        sectionNum: i,
+                        unitNum: j,
+                        completed: false
+                    })
+                } catch (err) {
+                    //
+                }
+            })
+        })
     }
     const unenroll = async () => {
         await db.courses.update(params.ipfscid, {
@@ -96,7 +125,7 @@ export default function CourseDetails() {
             <Heading as='h4'>Learning Outcome:</Heading>
             <Text>{courseInfo["course_obj"]}</Text>
             <Accordion defaultIndex={[0]} allowMultiple>
-            {courseInfo["table_of_content"] ? courseInfo["table_of_content"].map((section) => {
+            {courseInfo["table_of_content"] ? courseInfo["table_of_content"].map((section, i) => {
                 return (
                     <AccordionItem>
                         <h2>
@@ -108,11 +137,12 @@ export default function CourseDetails() {
                         </AccordionButton>
                         </h2>
                         <AccordionPanel pb={4}>
-                            <Steps orientation="vertical">
-                                {section.units.map((unit) => {
+                            <Steps orientation="vertical" onClickStep={(step) => { navigate( "/course/" + params.ipfscid + "/content?path=" + section.units[step].path + "&i=" + i + "&j=" + step ) }}>
+                                {section.units.map((unit, j) => {
                                     return (
-                                        <Step label={unit.title} icon={displayIcon(unit.types)}>
-                                            <Link as={ReactLink} to={"/course/" + params.ipfscid + "/content?path=" + unit.path}>Hi</Link>
+                                        <Step label={unit.title} icon={displayIcon(unit.types)} 
+                                            isCompletedStep={unitCompleted.find((u) => { return u.sectionNum == i && u.unitNum == j}).completed}>
+                                            <Link as={ReactLink} to={"/course/" + params.ipfscid + "/content?path=" + unit.path + "&i=" + i + "&j=" + j}>Hi</Link>
                                         </Step>
                                     )
                                 })}

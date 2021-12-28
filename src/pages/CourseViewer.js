@@ -1,4 +1,4 @@
-import { Box, Text } from '@chakra-ui/react';
+import { Box, Text, Button } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'react-router-dom';
 
@@ -15,6 +15,7 @@ import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import "katex/dist/katex.min.css"; // `rehype-katex` does not import the CSS for you
 
+import { db } from "./CourseDetails";
 
 export default function CourseViewer() {
     let params = useParams();
@@ -33,7 +34,33 @@ export default function CourseViewer() {
         fn();
     }, [params.ipfscid]);
 
+    const markComplete = async () => {
+        let i = parseInt(searchParams.get("i"));
+        let j = parseInt(searchParams.get("j"));
+        console.log(i*100 + j);
+
+        await db["learning_unit"].update(i * 100 + j, { completed: true });
+    };
+
+    const toggleBookmark = async () => {
+        let i = parseInt(searchParams.get("i"));
+        let j = parseInt(searchParams.get("j"));
+        console.log(i*100 + j);
+
+        await db.transaction('rw', db.bookmarks, async () => {
+            const existing = await db.bookmarks.get({ unitId: i * 100 + j});
+            if (existing) {
+                await db.bookmarks.delete(existing.id);
+            } else {
+                await db.bookmarks.add({ unitId: i * 100 + j });
+            }
+        })
+    }
+
     return (
+        <Box>
+            <Button onClick={markComplete}>Mark Completed</Button>
+            <Button onClick={toggleBookmark}>BookMark</Button>
         <Text>
             <ReactMarkdown
                 remarkPlugins={[remarkMath, remarkGfm]}
@@ -53,5 +80,6 @@ export default function CourseViewer() {
                 }}
             />
         </Text>
+        </Box>
     )
 }
