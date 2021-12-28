@@ -15,6 +15,7 @@
     "chakra-ui-steps": "^1.5.0",
     "dexie": "^3.2.0",
     "dexie-react-hooks": "^1.1.1",
+    "dexie-relationships": "^1.2.11",
     "elasticlunr": "^0.9.5",
     "framer-motion": "^4.1.17",
     "history": "^5.2.0",

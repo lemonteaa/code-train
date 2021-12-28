@@ -1,4 +1,5 @@
 import { Box, Container } from "@chakra-ui/layout";
+import { Button } from "@chakra-ui/react";
 
 import { useParams } from "react-router-dom";
 
@@ -25,8 +26,16 @@ import {
 import { Link } from '@chakra-ui/react';
 import { Link as ReactLink } from "react-router-dom";
  
+import Dexie from 'dexie';
+import relationships from 'dexie-relationships';
 
+import { useLiveQuery } from "dexie-react-hooks";
 
+export const db = new Dexie('codetrain-guest', {addons: [relationships]});
+db.version(1).stores({
+    courses: '++id, ipfs, title, enrolled',
+    learning_unit: '++id, courseId -> courses.id, title, url, sectionNum, unitNum, completed'
+});
 
 export default function CourseDetails() {
     let params = useParams();
@@ -43,6 +52,14 @@ export default function CourseDetails() {
         fn();
     }, [params.ipfscid]);
 
+    const isEnrolled = useLiveQuery( async () => {
+        const course = await db.courses.where("ipfs").equals(params.ipfscid).toArray();
+        console.log(course);
+        if (course && course.length >= 1 && course[0].enrolled)
+            return true;
+        else return false;
+    }, [params.ipfscid])
+
     const displayIcon = (type) => {
         if (type == "reading_material") {
             return FaBook;
@@ -53,9 +70,26 @@ export default function CourseDetails() {
         }
     }
 
+    const enroll = async () => {
+        await db.courses.put({
+            id: params.ipfscid,
+            ipfs: params.ipfscid,
+            title: courseInfo["course_title"],
+            enrolled: true
+        });
+    }
+    const unenroll = async () => {
+        await db.courses.update(params.ipfscid, {
+            enrolled: false
+        })
+    }
+
     return (
         <Box>
-            <Box>Testing {params.ipfscid}</Box>
+            <Box>Testing {params.ipfscid}, enrolled? {isEnrolled}</Box>
+            {isEnrolled ? 
+                <Button onClick={unenroll} color="red" >Unenroll from this course</Button> : 
+                <Button onClick={enroll} color="blue" >Enroll in this course</Button> }
             <Heading size='xl'>{courseInfo["course_title"]}</Heading>
             <Heading as='h4'>Course Description:</Heading>
             <Text>{courseInfo["course_desc"]}</Text>
