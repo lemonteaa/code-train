@@ -43,21 +43,22 @@ export default function CourseDetails() {
             console.log(params.ipfscid);
             let rawManifest = await readFromIPFS("/ipfs/" + params.ipfscid + "/manifest.json");
             console.log(rawManifest);
-            setCourseInfo(JSON.parse(rawManifest));
+            const courseInfo = JSON.parse(rawManifest);
+            console.log(courseInfo);
+            setCourseInfo(courseInfo);
         };
         fn();
     }, [params.ipfscid]);
 
     const isEnrolled = useLiveQuery( async () => {
-        const course = await db.courses.where("ipfs").equals(params.ipfscid).toArray();
+        const course = await db.courses.get(params.ipfscid);
         console.log(course);
-        if (course && course.length >= 1 && course[0].enrolled)
-            return true;
-        else return false;
+        return course ? course.enrolled : false;
     }, [params.ipfscid])
 
+    // Using partial index support in dexie >= 3.x only
     const unitCompleted = useLiveQuery(async () => {
-        return await db["learning_unit"].where("courseId").equals(params.ipfscid).toArray()
+        return await db.learningunit.where('ipfscid').equals(params.ipfscid).toArray()
     }, [params.ipfscid])
 
     const displayIcon = (type) => {
@@ -72,13 +73,35 @@ export default function CourseDetails() {
 
     const enroll = async () => {
         await db.courses.put({
-            id: params.ipfscid,
-            ipfs: params.ipfscid,
+            ipfscid: params.ipfscid,
             title: courseInfo["course_title"],
             enrolled: true
         });
 
-        courseInfo["table_of_content"].forEach(async (section, i) => {
+        for (const [i, section] of courseInfo["table_of_content"].entries()) {
+            console.log(section);
+            console.log(i);
+            for (const [j, unit] of section.units.entries()) {
+                try {
+                    // Using add and not put as it could be an re-enroll with pre-existing entries
+                    // and we don't want to overwrite previous progress (completed units)
+                    await db.learningunit.add({
+                        ipfscid: params.ipfscid,
+                        sectionNum: i,
+                        unitNum: j,
+                        title: unit.title,
+                        url: unit.path,
+                        completed: false,
+                        timeest: unit["time_needed"]
+                    })
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
+
+        //[ipfscid, sectionNum, unitNum], [sectionNum, unitNum]' // { title, url, completed }
+        /*courseInfo["table_of_content"].forEach(async (section, i) => {
             section.units.forEach( async (unit, j) => {
                 try {
                     await db["learning_unit"].add({
@@ -94,7 +117,7 @@ export default function CourseDetails() {
                     //
                 }
             })
-        })
+        })*/
     }
     const unenroll = async () => {
         await db.courses.update(params.ipfscid, {
@@ -130,7 +153,7 @@ export default function CourseDetails() {
                                 {section.units.map((unit, j) => {
                                     return (
                                         <Step label={unit.title} icon={displayIcon(unit.types)} 
-                                            isCompletedStep={unitCompleted.find((u) => { return u.sectionNum == i && u.unitNum == j}).completed}>
+                                            isCompletedStep={unitCompleted?.find((u) => { return u.sectionNum == i && u.unitNum == j})?.completed}>
                                             <Link as={ReactLink} to={"/course/" + params.ipfscid + "/content?path=" + unit.path + "&i=" + i + "&j=" + j}>Hi</Link>
                                         </Step>
                                     )

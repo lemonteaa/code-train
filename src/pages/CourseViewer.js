@@ -37,22 +37,32 @@ export default function CourseViewer() {
     const markComplete = async () => {
         let i = parseInt(searchParams.get("i"));
         let j = parseInt(searchParams.get("j"));
-        console.log(i*100 + j);
 
-        await db["learning_unit"].update(i * 100 + j, { completed: true });
+        await db.learningunit.update({
+            ipfscid: params.ipfscid,
+            sectionNum: i,
+            unitNum: j
+        }, { completed: true });
     };
 
     const toggleBookmark = async () => {
         let i = parseInt(searchParams.get("i"));
         let j = parseInt(searchParams.get("j"));
-        console.log(i*100 + j);
 
         await db.transaction('rw', db.bookmarks, async () => {
-            const existing = await db.bookmarks.get({ unitId: i * 100 + j});
+            const existing = await db.bookmarks.get({
+                ipfscid: params.ipfscid,
+                sectionNum: i,
+                unitNum: j
+            });
             if (existing) {
                 await db.bookmarks.delete(existing.id);
             } else {
-                await db.bookmarks.add({ unitId: i * 100 + j });
+                await db.bookmarks.add({
+                    ipfscid: params.ipfscid,
+                    sectionNum: i,
+                    unitNum: j
+                });
             }
         })
     }

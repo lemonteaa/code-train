@@ -3,10 +3,22 @@ import Dexie from 'dexie';
 //{addons: [relationships]}
 
 export const db = new Dexie('codetrain-guest');
-db.version(1).stores({
+/*db.version(1).stores({
     courses: '++id, ipfs, title, enrolled',
     learning_unit: '++id, courseId -> courses.id, title, url, sectionNum, unitNum, completed'
 });
 db.version(2).stores({
     bookmarks: '++id, unitId -> learning_unit.id'
+});*/
+
+// Specify the index (non-index field mentioned in comment)
+// Quick revision: first field is primary key. ++ for auto-increment, 
+// [] for composite index, & for uniquness constraint,
+// index can be used for sorting
+db.version(1).stores({
+    courses: 'ipfscid', // { title, enrolled }
+    learningunit: '[ipfscid+sectionNum+unitNum], [sectionNum+unitNum]' // { title, url, completed }
+});
+db.version(2).stores({
+    bookmarks: '++id, &[ipfscid+sectionNum+unitNum]'
 });
