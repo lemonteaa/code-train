@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { DailyGoalProgress } from "../components/gamify";
 import { InspirationalQuotes } from "../components/inspirational";
+import { ToolbarBookmark } from "../components/bookmarks";
 
 export default function Dashboard(props) {
     
@@ -32,9 +33,8 @@ export default function Dashboard(props) {
         <>
         <DailyGoalProgress/>
         <InspirationalQuotes />
-        <Box>Hi {bookmarks?.map((bookmark) => {
-            return (<Box>{bookmark.courseTitle}, {bookmark.unitTitle}, {bookmark.path}</Box>);
-        })}</Box>
+        <Box>Hi </Box>
+        <ToolbarBookmark bookmarks={bookmarks} />
         </>
     )
 }
