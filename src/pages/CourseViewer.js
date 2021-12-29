@@ -15,7 +15,7 @@ import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import "katex/dist/katex.min.css"; // `rehype-katex` does not import the CSS for you
 
-import { db } from "./CourseDetails";
+import { db } from "../integrations/db";
 
 export default function CourseViewer() {
     let params = useParams();

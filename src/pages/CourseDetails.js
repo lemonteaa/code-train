@@ -28,19 +28,8 @@ import { Link as ReactLink } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
  
-import Dexie from 'dexie';
-import relationships from 'dexie-relationships';
-
+import { db } from "../integrations/db";
 import { useLiveQuery } from "dexie-react-hooks";
-
-export const db = new Dexie('codetrain-guest', {addons: [relationships]});
-db.version(1).stores({
-    courses: '++id, ipfs, title, enrolled',
-    learning_unit: '++id, courseId -> courses.id, title, url, sectionNum, unitNum, completed'
-});
-db.version(2).stores({
-    bookmarks: '++id, unitId -> learning_unit.id'
-});
 
 export default function CourseDetails() {
     let navigate = useNavigate();

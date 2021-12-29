@@ -1,6 +1,6 @@
 import { Box } from "@chakra-ui/react"
 
-import { db } from "./CourseDetails";
+import { db } from "../integrations/db";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect } from "react";
 
