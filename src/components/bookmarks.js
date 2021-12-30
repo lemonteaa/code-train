@@ -15,7 +15,7 @@ import { Heading, Text } from "@chakra-ui/react"
 
 import { HStack, Box } from "@chakra-ui/react"
 
-function formURL(ipfscid, path, sectionNum, unitNum) {
+export function formURL(ipfscid, path, sectionNum, unitNum) {
     //'/course/' + '/content/?path=' + '&i=' + '&j=' + ;
     return `/course/${ipfscid}/content?path=${path}&i=${sectionNum}&j=${unitNum}`;
 }

@@ -4,6 +4,23 @@ import { useEffect } from "react";
 
 import { useLiveQuery } from "dexie-react-hooks"
 
+import { formURL } from "./bookmarks"
+
+import {
+    List,
+    ListItem,
+    ListIcon,
+    OrderedList,
+    UnorderedList,
+} from '@chakra-ui/react'
+
+import { Link } from "@chakra-ui/react"
+import { Link as ReactLink } from "react-router-dom"
+
+import { Heading, Text } from "@chakra-ui/react"
+
+import { HStack, Box } from "@chakra-ui/react"
+
 async function getDailyGoals() {
     const nowDT = DateTime.now();
     //Note the reverse: `...where("startDT").belowOrEqual(nowDT.toJSDate())` will be inefficient
@@ -93,6 +110,27 @@ export function DailyGoal() {
     });
 
     return (
-        <p>Test</p>
+        <Box bg="gray.300" w="400px" borderRadius="md" boxShadow="md" p="6">
+            <List spacing={3}>
+                {dailyGoalItems.map((item) => {
+                    return (
+                        <ListItem>
+                            <Link as={ReactLink} to={formURL(item.ipfscid, item.path, item.sectionNum, item.unitNum)}>
+                                <Box>
+                                    <Heading as='h2' size='md'>
+                                        {item.title}
+                                    </Heading>
+                                    <Text>
+                                        In: <Text as='i' color='gray.500' isTruncated>
+                                            {item.courseTitle}
+                                        </Text>
+                                    </Text>
+                                </Box>
+                            </Link>
+                        </ListItem>
+                    )
+                })}
+            </List>
+        </Box>
     )
 }
