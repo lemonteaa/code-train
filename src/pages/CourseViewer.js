@@ -17,6 +17,8 @@ import "katex/dist/katex.min.css"; // `rehype-katex` does not import the CSS for
 
 import { db } from "../integrations/db";
 
+import { getDailyGoals } from '../components/dailygoal';
+
 export default function CourseViewer() {
     let params = useParams();
     let [searchParams, setSearchParams] = useSearchParams();
@@ -43,6 +45,29 @@ export default function CourseViewer() {
             sectionNum: i,
             unitNum: j
         }, { completed: true });
+
+        //TODO: Transaction?
+        const res = await getDailyGoals();
+        console.log(res);
+        if (res.found) {
+            const id = res.goal.id;
+            const k = res.goal.items.findIndex((item) => { 
+                return (item.ipfscid == params.ipfscid) && 
+                        (item.sectionNum == i) &&
+                        (item.unitNum == j);
+            });
+            console.log(id);
+            console.log(k);
+            
+            if (k != -1) {
+                var items = res.goal.items.slice();
+                items[k] = {...items[k],
+                    completed: true };
+                await db.dailygoals.update(id, {
+                    'items': items
+                });
+            }
+        }
     };
 
     const toggleBookmark = async () => {

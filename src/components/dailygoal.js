@@ -21,7 +21,7 @@ import { Heading, Text } from "@chakra-ui/react"
 
 import { HStack, Box } from "@chakra-ui/react"
 
-async function getDailyGoals() {
+export async function getDailyGoals() {
     const nowDT = DateTime.now();
     //Note the reverse: `...where("startDT").belowOrEqual(nowDT.toJSDate())` will be inefficient
     const res = await db.dailygoals.where("endDT").above(nowDT.toJSDate()).and((candidate) => {
@@ -30,7 +30,34 @@ async function getDailyGoals() {
     if (!res || res.length == 0) {
         return { found: false };
     } else {
-        return { found: true, goal: res[0] };
+        var goal = res[0];
+
+        var completedTime = 0;
+        var allTime = 0;
+        var noneCompleted = true;
+        var allCompleted = true;
+        for (const item of goal.items) {
+            const t = parseInt(item.timeest, 10);
+            allTime += t;
+            if (item.completed) {
+                completedTime += t;
+            }
+            noneCompleted = noneCompleted && !item.completed;
+            allCompleted = allCompleted && item.completed;
+        }
+        var progress = Math.round(100.0 * completedTime / allTime);
+        if (!noneCompleted) {
+            progress = Math.max(1, progress);
+        }
+        if (!allCompleted) {
+            progress = Math.min(99, progress);
+        }
+        console.log(`allTime ${allTime}, completedTime ${completedTime}`);
+        console.log(`allCompleted ${allCompleted.toString()}, noneCompleted ${noneCompleted.toString()}`);
+        console.log("Progress:" + progress);
+        goal.progress = progress;
+        
+        return { found: true, goal: goal };
     }
 }
 
@@ -112,15 +139,16 @@ export function DailyGoal() {
     return (
         <Box bg="gray.300" w="400px" borderRadius="md" boxShadow="md" p="6">
             <List spacing={3}>
-                {dailyGoalItems.map((item) => {
+                {dailyGoalItems?.map((item) => {
+                    let strike = item.completed ? { as: "del" } : {};
                     return (
                         <ListItem>
                             <Link as={ReactLink} to={formURL(item.ipfscid, item.path, item.sectionNum, item.unitNum)}>
                                 <Box>
-                                    <Heading as='h2' size='md'>
+                                    <Heading as={item.completed ? 'del' : 'h2'} size='md'>
                                         {item.title}
                                     </Heading>
-                                    <Text>
+                                    <Text {...strike}>
                                         In: <Text as='i' color='gray.500' isTruncated>
                                             {item.courseTitle}
                                         </Text>
