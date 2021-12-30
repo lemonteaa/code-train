@@ -17,8 +17,12 @@ db.version(2).stores({
 // index can be used for sorting
 db.version(1).stores({
     courses: 'ipfscid', // { title, enrolled }
-    learningunit: '[ipfscid+sectionNum+unitNum], [sectionNum+unitNum]' // { title, url, completed }
+    learningunit: '[ipfscid+sectionNum+unitNum], [sectionNum+unitNum]' // { title, url, completed, timeest }
 });
 db.version(2).stores({
     bookmarks: '++id, &[ipfscid+sectionNum+unitNum]'
 });
+//Let's keep it simple and put the goal items as subobject for now
+db.version(5).stores({
+    dailygoals: '++id, [endDT+startDT], endDT' // { items: [{ ipfscid, sectionNum, unitNum, completed }] }
+})
